@@ -81,7 +81,7 @@ const s = {
     justifyContent: "center",
     alignItems: "center",
     display: "flex",
-    margin: 5,
+    marginBottom: 5,
     color: "white",
     fontWeight: "bold",
   },
