@@ -3,7 +3,7 @@ import "../styling/spectator.css";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 
 export default function Spectator(props) {
-  const { data } = props;
+  const { data, firestore } = props;
 
   /**
    * ********STATE*********
@@ -13,9 +13,39 @@ export default function Spectator(props) {
    * *******FUNCTIONS******
    */
 
-  const addToRed = () => {};
+  const removeFromSpec = () => {
+    firestore
+      .collection("spectators")
+      .doc(data.battletag)
+      .delete()
+      .then(() => {
+        return true;
+      });
+  };
 
-  const addToBlue = () => {};
+  const addToRed = () => {
+    firestore
+      .collection("redTeam")
+      .doc(data.battletag)
+      .set({
+        ...data,
+      })
+      .then(() => {
+        window.location.reload();
+      });
+  };
+
+  const addToBlue = () => {
+    firestore
+      .collection("blueTeam")
+      .doc(data.battletag)
+      .set({
+        ...data,
+      })
+      .then(() => {
+        window.location.reload();
+      });
+  };
 
   const remove = () => {};
 
@@ -31,17 +61,37 @@ export default function Spectator(props) {
         </div>
       </ContextMenuTrigger>
       {/* CONTEXT MENU */}
-
       <ContextMenu id={data.battletag}>
         <div style={s.contextContainer}>
           <div style={s.contextItem}>
-            <MenuItem onClick={addToRed}>Add to Red</MenuItem>
+            <MenuItem
+              onClick={() => {
+                removeFromSpec();
+                addToRed();
+              }}
+            >
+              Add to Red
+            </MenuItem>
           </div>
           <div style={s.contextItem}>
-            <MenuItem onClick={addToBlue}>Add to Blue</MenuItem>
+            <MenuItem
+              onClick={() => {
+                removeFromSpec();
+                addToBlue();
+              }}
+            >
+              Add to Blue
+            </MenuItem>
           </div>
           <div style={s.contextItem}>
-            <MenuItem onClick={remove}>Remove</MenuItem>
+            <MenuItem
+              onClick={() => {
+                removeFromSpec();
+                window.location.reload();
+              }}
+            >
+              Remove
+            </MenuItem>
           </div>
         </div>
       </ContextMenu>
@@ -52,7 +102,7 @@ export default function Spectator(props) {
 const s = {
   container: {
     backgroundColor: "#eab900",
-    padding: 10,
+    padding: 5,
     justifyContent: "center",
     alignItems: "center",
     display: "flex",
@@ -62,6 +112,7 @@ const s = {
   specText: {
     flex: 1,
     display: "flex",
+    fontWeight: "bold",
     justifyContent: "space-between",
     flexDirection: "row",
   },

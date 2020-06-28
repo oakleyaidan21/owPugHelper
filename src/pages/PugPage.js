@@ -5,6 +5,8 @@ import "firebase/firestore";
 import Spectator from "../components/Spectator.js";
 
 export default function PugPage(props) {
+  const firestore = firebase.firestore();
+
   useEffect(() => {
     getCurrentTeams();
   }, []);
@@ -24,13 +26,20 @@ export default function PugPage(props) {
    * Gets the current teams from firestore
    */
   const getCurrentTeams = async () => {
-    const firestore = firebase.firestore();
-
     //spectators
     const spectatorRef = await firestore.collection("spectators").get();
     let spectatorData = spectatorRef.docs.map((doc) => doc.data());
-    spectatorData.pop(); //remove dummy data
     setSpectators(spectatorData);
+
+    //red team
+    const redRef = await firestore.collection("redTeam").get();
+    let redData = redRef.docs.map((doc) => doc.data());
+    setRedTeam(redData);
+
+    //blue team
+    const blueRef = await firestore.collection("blueTeam").get();
+    let blueData = blueRef.docs.map((doc) => doc.data());
+    setBlueTeam(blueData);
   };
 
   return (
@@ -41,19 +50,24 @@ export default function PugPage(props) {
           <div style={s.teamContainer}>
             <div>Team 1</div>
             {redTeam.map((player) => {
-              return <Player data={player} color="#ec4053" />;
+              console.log("play", player);
+              return (
+                <Player data={player} color="#ec4053" firestore={firestore} />
+              );
             })}
           </div>
           <div style={s.teamContainer}>
             <div>Team 2</div>
             {blueTeam.map((player) => {
-              return <Player data={player} color="#5fd1ff" />;
+              return (
+                <Player data={player} color="#5fd1ff" firestore={firestore} />
+              );
             })}
           </div>
           <div style={s.spectatorContainer}>
             <div>Spectators</div>
             {spectators.map((spectator) => {
-              return <Spectator data={spectator} />;
+              return <Spectator data={spectator} firestore={firestore} />;
             })}
           </div>
         </div>

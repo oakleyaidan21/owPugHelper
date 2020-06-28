@@ -8,57 +8,36 @@ import { useHistory } from "react-router-dom";
 
 export default function EnterUsername(props) {
   const history = useHistory();
+  const roles = ["Tank", "Damage", "Support"];
+
+  const firestore = firebase.firestore();
 
   /**
    * *********STATE*********
    */
   const [battletag, setBattletag] = useState("");
+  const [skillRating, setSkillRating] = useState(0);
+  const [selectedRoles, setSelectedRoles] = useState({
+    Tank: false,
+    Damage: false,
+    Support: false,
+  });
 
   /**
    * *********FUNCTIONS*****
    */
-  const getHTML = (url, callback) => {
-    if (!window.XMLHttpRequest) return;
 
-    let xhr = new XMLHttpRequest();
-
-    // Setup callback
-    xhr.onload = function () {
-      if (callback && typeof callback === "function") {
-        callback(this.responseXML);
-      }
-    };
-
-    // Get the HTML
-    xhr.open("GET", url);
-    xhr.responseType = "document";
-    xhr.send();
-  };
-
+  /**
+   * Submits the entered battletag, sr, and roles to firebase
+   */
   const submitBattletag = () => {
-    // const url =
-    //   "https://cors-anywhere.herokuap.com/https://www.overbuff.com/players/pc/" +
-    //   battletag.replace("#", "-") +
-    //   "/";
-    // console.log("url:", url);
-    // getHTML(url, (res) => {
-    //   console.log(res);
-    // });
-
-    const sr = 3000;
-
-    addToPug(sr);
-  };
-
-  const addToPug = (sr) => {
-    const firestore = firebase.firestore();
-
     firestore
       .collection("spectators")
       .doc(battletag)
       .set({
         battletag: battletag,
-        sr: sr,
+        sr: skillRating,
+        selectedRoles: selectedRoles,
         gamesPlayed: 0,
       })
       .then(() => {
@@ -68,6 +47,8 @@ export default function EnterUsername(props) {
       .catch((error) => {
         console.error("error adding spectator: ", error);
       });
+
+    history.push("/pugpage");
   };
 
   return (
@@ -86,6 +67,34 @@ export default function EnterUsername(props) {
               value={battletag}
             />
           </Form.Group>
+          <Form.Group>
+            <Form.Label>Enter your Skill Rating (please be honest)</Form.Label>
+            <Form.Control
+              size="lg"
+              type="text"
+              placeholder="Skill Rating"
+              onChange={(e) => setSkillRating(e.target.value)}
+              value={skillRating}
+            />
+          </Form.Group>
+          <div>Select your role(s)</div>
+          <div style={s.roleContainer}>
+            {roles.map((role) => {
+              const selected = selectedRoles[role];
+              return (
+                <div
+                  style={{ ...s.role, ...(selected && s.selectedRole) }}
+                  onClick={() => {
+                    let sel = selectedRoles;
+                    sel[role] = selected ? false : true;
+                    setSelectedRoles({ ...sel });
+                  }}
+                >
+                  {role}
+                </div>
+              );
+            })}
+          </div>
           <Button variant="primary" type="submit" onClick={submitBattletag}>
             Submit
           </Button>
@@ -94,3 +103,23 @@ export default function EnterUsername(props) {
     </div>
   );
 }
+
+const s = {
+  roleContainer: {
+    display: "flex",
+    flexDirection: "row",
+  },
+  role: {
+    padding: 10,
+    border: "2px solid lightgrey",
+    borderRadius: 5,
+    margin: 5,
+    flex: 1,
+    cursor: "pointer",
+  },
+  selectedRole: {
+    backgroundColor: "blue",
+    color: "white",
+    border: "2px solid blue",
+  },
+};
