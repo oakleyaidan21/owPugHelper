@@ -50,7 +50,6 @@ export default function PugPage(props) {
           <div style={s.teamContainer}>
             <div>Team 1</div>
             {redTeam.map((player) => {
-              console.log("play", player);
               return (
                 <Player data={player} color="#ec4053" firestore={firestore} />
               );

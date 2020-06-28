@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "../styling/spectator.css";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
+import { removeFromSpec, addToRed, addToBlue } from "../util/firebaseFunctions";
 
 export default function Spectator(props) {
   const { data, firestore } = props;
@@ -9,49 +10,9 @@ export default function Spectator(props) {
    * ********STATE*********
    */
 
-  /**
-   * *******FUNCTIONS******
-   */
-
-  const removeFromSpec = () => {
-    firestore
-      .collection("spectators")
-      .doc(data.battletag)
-      .delete()
-      .then(() => {
-        return true;
-      });
-  };
-
-  const addToRed = () => {
-    firestore
-      .collection("redTeam")
-      .doc(data.battletag)
-      .set({
-        ...data,
-      })
-      .then(() => {
-        window.location.reload();
-      });
-  };
-
-  const addToBlue = () => {
-    firestore
-      .collection("blueTeam")
-      .doc(data.battletag)
-      .set({
-        ...data,
-      })
-      .then(() => {
-        window.location.reload();
-      });
-  };
-
-  const remove = () => {};
-
   return (
     <div>
-      <ContextMenuTrigger id={data.battletag}>
+      <ContextMenuTrigger id={data.battletag + "spec"}>
         {/* VISIBLE COMPONENT */}
         <div style={s.container}>
           <div style={s.specText}>
@@ -61,13 +22,13 @@ export default function Spectator(props) {
         </div>
       </ContextMenuTrigger>
       {/* CONTEXT MENU */}
-      <ContextMenu id={data.battletag}>
+      <ContextMenu id={data.battletag + "spec"}>
         <div style={s.contextContainer}>
           <div style={s.contextItem}>
             <MenuItem
               onClick={() => {
-                removeFromSpec();
-                addToRed();
+                removeFromSpec(firestore, data.battletag);
+                addToRed(firestore, data.battletag, data);
               }}
             >
               Add to Red
@@ -76,8 +37,8 @@ export default function Spectator(props) {
           <div style={s.contextItem}>
             <MenuItem
               onClick={() => {
-                removeFromSpec();
-                addToBlue();
+                removeFromSpec(firestore, data.battletag);
+                addToBlue(firestore, data.battletag, data);
               }}
             >
               Add to Blue
@@ -86,7 +47,7 @@ export default function Spectator(props) {
           <div style={s.contextItem}>
             <MenuItem
               onClick={() => {
-                removeFromSpec();
+                removeFromSpec(firestore, data.battletag);
                 window.location.reload();
               }}
             >

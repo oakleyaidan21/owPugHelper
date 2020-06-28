@@ -1,8 +1,32 @@
 import React from "react";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
+import {
+  addToRed,
+  addToBlue,
+  removeFromRed,
+  removeFromBlue,
+  addToSpec,
+} from "../util/firebaseFunctions";
 
 export default function Player(props) {
-  const { data } = props;
+  const { data, firestore } = props;
+
+  const isRed = props.color === "#ec4053";
+
+  const movePlayer = (toSpec) => {
+    if (isRed) {
+      removeFromRed(firestore, data.battletag);
+      toSpec
+        ? addToSpec(firestore, data.battletag, data)
+        : addToBlue(firestore, data.battletag, data);
+    } else {
+      removeFromBlue(firestore, data.battletag);
+      toSpec
+        ? addToSpec(firestore, data.battletag, data)
+        : addToRed(firestore, data.battletag, data);
+    }
+  };
+
   return (
     <div>
       <ContextMenuTrigger id={data.battletag}>
@@ -14,15 +38,33 @@ export default function Player(props) {
         <ContextMenu id={data.battletag}>
           <div style={s.contextContainer}>
             <div style={s.contextItem}>
-              <MenuItem>
-                Add to {props.color !== "#ec4053" ? "Red" : "Blue"}
+              <MenuItem
+                onClick={() => {
+                  movePlayer(false);
+                }}
+              >
+                Add to {!isRed ? "Red" : "Blue"}
               </MenuItem>
             </div>
             <div style={s.contextItem}>
-              <MenuItem>Move to Spectator</MenuItem>
+              <MenuItem
+                onClick={() => {
+                  movePlayer(true);
+                }}
+              >
+                Move to Spectator
+              </MenuItem>
             </div>
             <div style={s.contextItem}>
-              <MenuItem>Remove</MenuItem>
+              <MenuItem
+                onClick={() => {
+                  isRed
+                    ? removeFromRed(firestore, data.battletag, data)
+                    : removeFromBlue(firestore, data.battletag, data);
+                }}
+              >
+                Remove
+              </MenuItem>
             </div>
           </div>
         </ContextMenu>
