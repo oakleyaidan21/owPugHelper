@@ -8,8 +8,30 @@ export default function PugPage(props) {
   const firestore = firebase.firestore();
 
   useEffect(() => {
-    getCurrentTeams();
-  }, []);
+    const unsubscribeRed = firestore
+      .collection("redTeam")
+      .onSnapshot((snap) => {
+        let redData = snap.docs.map((doc) => doc.data());
+        setRedTeam(redData);
+      });
+    const unsubscribeBlue = firestore
+      .collection("blueTeam")
+      .onSnapshot((snap) => {
+        let blueData = snap.docs.map((doc) => doc.data());
+        setBlueTeam(blueData);
+      });
+    const unsubscribeSpec = firestore
+      .collection("spectators")
+      .onSnapshot((snap) => {
+        let specData = snap.docs.map((doc) => doc.data());
+        setSpectators(specData);
+      });
+    return () => {
+      unsubscribeRed();
+      unsubscribeBlue();
+      unsubscribeSpec();
+    };
+  }, [firestore]);
 
   /**
    * ********STATE**************
@@ -21,30 +43,6 @@ export default function PugPage(props) {
   /**
    * ********FUNCTIONS**********
    */
-
-  /**
-   * Gets the current teams from firestore
-   */
-  const getCurrentTeams = async () => {
-    //spectators
-    const spectatorRef = await firestore.collection("spectators").get();
-    let spectatorData = spectatorRef.docs.map((doc) => doc.data());
-    //sort by number of games played
-    spectatorData.sort((a, b) => {
-      return a.gamesPlayed - b.gamesPlayed;
-    });
-    setSpectators(spectatorData);
-
-    //red team
-    const redRef = await firestore.collection("redTeam").get();
-    let redData = redRef.docs.map((doc) => doc.data());
-    setRedTeam(redData);
-
-    //blue team
-    const blueRef = await firestore.collection("blueTeam").get();
-    let blueData = blueRef.docs.map((doc) => doc.data());
-    setBlueTeam(blueData);
-  };
 
   const emptyBlue = 6 - blueTeam.length;
   const emptyRed = 6 - redTeam.length;
@@ -66,7 +64,7 @@ export default function PugPage(props) {
               })}
               {[...Array(emptyBlue)].map((empty, i) => {
                 return (
-                  <div style={s.emptyPlayer} key={i}>
+                  <div style={s.emptyPlayer} key={i + "blue"}>
                     EMPTY
                   </div>
                 );
@@ -82,7 +80,7 @@ export default function PugPage(props) {
               })}
               {[...Array(emptyRed)].map((empty, i) => {
                 return (
-                  <div style={s.emptyPlayer} key={i}>
+                  <div style={s.emptyPlayer} key={i + "red"}>
                     EMPTY
                   </div>
                 );

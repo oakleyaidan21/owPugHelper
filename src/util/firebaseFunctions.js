@@ -12,7 +12,7 @@ export const addToSpec = (firestore, battletag, data) => {
       ...data,
     })
     .then(() => {
-      window.location.reload();
+      // window.location.reload();
     });
 };
 
@@ -30,7 +30,7 @@ export const addToRed = (firestore, battletag, data) => {
       ...data,
     })
     .then(() => {
-      window.location.reload();
+      // window.location.reload();
     });
 };
 
@@ -48,7 +48,7 @@ export const addToBlue = (firestore, battletag, data) => {
       ...data,
     })
     .then(() => {
-      window.location.reload();
+      // window.location.reload();
     });
 };
 
@@ -63,7 +63,7 @@ export const removeFromSpec = (firestore, battletag) => {
     .doc(battletag)
     .delete()
     .then(() => {
-      window.location.reload();
+      // window.location.reload();
     });
 };
 
@@ -78,7 +78,7 @@ export const removeFromRed = (firestore, battletag) => {
     .doc(battletag)
     .delete()
     .then(() => {
-      window.location.reload();
+      // window.location.reload();
     });
 };
 
@@ -93,6 +93,6 @@ export const removeFromBlue = (firestore, battletag) => {
     .doc(battletag)
     .delete()
     .then(() => {
-      window.location.reload();
+      // window.location.reload();
     });
 };

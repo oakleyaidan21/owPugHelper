@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import "../styling/spectator.css";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import { removeFromSpec, addToRed, addToBlue } from "../util/firebaseFunctions";
@@ -48,7 +48,7 @@ export default function Spectator(props) {
             <MenuItem
               onClick={() => {
                 removeFromSpec(firestore, data.battletag);
-                window.location.reload();
+                // window.location.reload();
               }}
             >
               Remove
