@@ -48,6 +48,41 @@ export default function PugPage(props) {
    * ********FUNCTIONS**********
    */
 
+  /**
+   * Adds 1 to the gamesPlayed field of
+   * everyone on red and blue team
+   */
+  const startPug = () => {
+    //red
+    firestore
+      .collection("redTeam")
+      .get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          doc.ref.update({
+            gamesPlayed: doc.data().gamesPlayed + 1,
+          });
+        });
+      });
+
+    //blue
+    firestore
+      .collection("blueTeam")
+      .get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          doc.ref.update({
+            gamesPlayed: doc.data().gamesPlayed + 1,
+          });
+        });
+      });
+  };
+
+  /**
+   * Puts everyone on each team into spectators
+   */
+  const clearPug = () => {};
+
   const emptyBlue = 6 - blueTeam.length;
   const emptyRed = 6 - redTeam.length;
 
@@ -100,7 +135,14 @@ export default function PugPage(props) {
           </div>
         </div>
         <div style={s.buttonContainer}>
-          <div style={s.startButton}>START</div>
+          <div
+            style={s.startButton}
+            onClick={() => {
+              startPug();
+            }}
+          >
+            START
+          </div>
           <div style={s.clearButton}>CLEAR</div>
         </div>
       </div>

@@ -42,13 +42,13 @@ export default function EnterUsername(props) {
       })
       .then(() => {
         console.log("spectator added successfully!");
-        history.push("/pugpage");
+        history.push("/pug");
       })
       .catch((error) => {
         console.error("error adding spectator: ", error);
       });
 
-    history.push("/pugpage");
+    history.push("/pug");
   };
 
   return (
