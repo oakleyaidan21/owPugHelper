@@ -5,6 +5,7 @@ import { removeFromSpec, addToRed, addToBlue } from "../util/firebaseFunctions";
 
 export default function Spectator(props) {
   const { data, firestore } = props;
+  const roles = data.selectedRoles;
 
   /**
    * ********STATE*********
@@ -16,7 +17,13 @@ export default function Spectator(props) {
         {/* VISIBLE COMPONENT */}
         <div style={s.container}>
           <div style={s.specText}>
-            <div>{data.battletag.toUpperCase()}</div>
+            <div style={{ width: 120 }}>{data.battletag.toUpperCase()}</div>
+            {/* ROLES */}
+            <div style={s.roleContainer}>
+              <div style={{ color: roles.Tank ? "white" : "black" }}>T</div>
+              <div style={{ color: roles.Damage ? "white" : "black" }}>D</div>
+              <div style={{ color: roles.Support ? "white" : "black" }}>S</div>
+            </div>
             <div>{data.gamesPlayed}</div>
           </div>
         </div>
@@ -86,5 +93,13 @@ const s = {
 
   contextItem: {
     color: "white",
+  },
+
+  roleContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingLeft: 20,
+    paddingRight: 20,
   },
 };

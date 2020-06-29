@@ -7,6 +7,10 @@ import Spectator from "../components/Spectator.js";
 export default function PugPage(props) {
   const firestore = firebase.firestore();
 
+  /**
+   * Listens to firestore changes and updates the
+   * teams accordingly
+   */
   useEffect(() => {
     const unsubscribeRed = firestore
       .collection("redTeam")

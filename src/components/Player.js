@@ -10,6 +10,7 @@ import {
 
 export default function Player(props) {
   const { data, firestore } = props;
+  const roles = data.selectedRoles;
 
   const isRed = props.color === "#ec4053";
 
@@ -32,7 +33,16 @@ export default function Player(props) {
       <ContextMenuTrigger id={data.battletag}>
         {/* VISIBLE COMPONENT */}
         <div style={{ ...s.container, backgroundColor: props.color }}>
-          {data.battletag.toUpperCase()}
+          <div style={s.playerInfo}>
+            <div style={{ width: 120 }}>{data.battletag.toUpperCase()}</div>
+            {/* ROLES */}
+            <div style={s.roleContainer}>
+              <div style={{ color: roles.Tank ? "white" : "black" }}>T</div>
+              <div style={{ color: roles.Damage ? "white" : "black" }}>D</div>
+              <div style={{ color: roles.Support ? "white" : "black" }}>S</div>
+            </div>
+            <div>{data.gamesPlayed}</div>
+          </div>
         </div>
         {/* CONTEXT MENU */}
         <ContextMenu id={data.battletag}>
@@ -93,5 +103,19 @@ const s = {
 
   contextItem: {
     color: "white",
+  },
+  playerInfo: {
+    flexDirection: "row",
+    display: "flex",
+    flex: 1,
+    justifyContent: "space-between",
+  },
+
+  roleContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingLeft: 20,
+    paddingRight: 20,
   },
 };
