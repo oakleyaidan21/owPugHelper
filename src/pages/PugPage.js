@@ -3,6 +3,7 @@ import Player from "../components/Player.js";
 import * as firebase from "firebase";
 import "firebase/firestore";
 import Spectator from "../components/Spectator.js";
+import TinyQueue from "tinyqueue";
 
 export default function PugPage(props) {
   const firestore = firebase.firestore();
@@ -42,6 +43,8 @@ export default function PugPage(props) {
    */
   const [redTeam, setRedTeam] = useState([]);
   const [blueTeam, setBlueTeam] = useState([]);
+  const [balancedRed, setBalancedRed] = useState([]);
+  const [balancedBlue, setBalancedBlue] = useState([]);
   const [spectators, setSpectators] = useState([]);
 
   /**
@@ -83,8 +86,53 @@ export default function PugPage(props) {
    */
   const clearPug = () => {};
 
-  const emptyBlue = 6 - blueTeam.length;
-  const emptyRed = 6 - redTeam.length;
+  /**
+   * Balances using the greedy partition algorithm
+   */
+  const balancePug = () => {
+    //put red and blue teams into one array
+    let pool = [...redTeam, ...blueTeam];
+    pool.sort((a, b) => {
+      return parseInt(b.sr) - parseInt(a.sr);
+    });
+
+    let newRed = [];
+    let newBlue = [];
+    let sum_red = 0;
+    let sum_blue = 0;
+    for (let i = 0; i < pool.length; i++) {
+      if (sum_red < sum_blue) {
+        newRed.push(pool[i]);
+        sum_red += parseInt(pool[i].sr);
+      } else {
+        newBlue.push(pool[i]);
+        sum_blue += parseInt(pool[i].sr);
+      }
+    }
+
+    setBalancedRed(newRed);
+    setBalancedBlue(newBlue);
+  };
+
+  const redToShow = balancedRed.length > 0 ? balancedRed : redTeam;
+  const blueToShow = balancedBlue.length > 0 ? balancedBlue : blueTeam;
+
+  const emptyBlue = 6 - blueToShow.length;
+  const emptyRed = 6 - redToShow.length;
+
+  let redAvg = 0;
+  let blueAvg = 0;
+
+  for (let i = 0; i < redToShow.length; i++) {
+    redAvg += parseInt(redToShow[i].sr);
+  }
+
+  for (let i = 0; i < blueToShow.length; i++) {
+    blueAvg += parseInt(blueToShow[i].sr);
+  }
+
+  redAvg = (redAvg / redToShow.length).toFixed(0);
+  blueAvg = (blueAvg / blueToShow.length).toFixed(0);
 
   return (
     <div className="mainContainer" style={s.blurredImage}>
@@ -96,7 +144,7 @@ export default function PugPage(props) {
           <div style={s.matchContainer}>
             <div style={s.teamContainer}>
               <div style={s.teamHeader}>Team 1</div>
-              {blueTeam.map((player) => {
+              {blueToShow.map((player) => {
                 return (
                   <Player data={player} color="#5fd1ff" firestore={firestore} />
                 );
@@ -108,11 +156,12 @@ export default function PugPage(props) {
                   </div>
                 );
               })}
+              <div>SR Average: {blueAvg}</div>
             </div>
             <div style={s.versus}>VS</div>
             <div style={s.teamContainer}>
               <div style={s.teamHeader}>Team 2</div>
-              {redTeam.map((player) => {
+              {redToShow.map((player) => {
                 return (
                   <Player data={player} color="#ec4053" firestore={firestore} />
                 );
@@ -124,6 +173,7 @@ export default function PugPage(props) {
                   </div>
                 );
               })}
+              <div>SR Average: {redAvg}</div>
             </div>
           </div>
           <div style={s.spectatorDivider} />
@@ -135,15 +185,25 @@ export default function PugPage(props) {
           </div>
         </div>
         <div style={s.buttonContainer}>
-          <div
-            style={s.startButton}
-            onClick={() => {
-              startPug();
-            }}
-          >
+          <div style={s.startButton} onClick={startPug}>
             START
           </div>
-          <div style={s.clearButton}>CLEAR</div>
+          <div style={s.clearButton} onClick={clearPug}>
+            CLEAR
+          </div>
+          <div
+            style={s.clearButton}
+            onClick={() => {
+              if (balancedBlue.length > 0) {
+                setBalancedBlue([]);
+                setBalancedRed([]);
+              } else {
+                balancePug();
+              }
+            }}
+          >
+            {balancedBlue.length > 0 ? "UNDO" : "BALANCE"}
+          </div>
         </div>
       </div>
     </div>
