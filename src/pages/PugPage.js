@@ -114,6 +114,54 @@ export default function PugPage(props) {
     setBalancedBlue(newBlue);
   };
 
+  /**
+   * Sets the balanced teams in the API
+   */
+  const setBalancedTeams = () => {
+    //delete all members of red and blue team
+    firestore
+      .collection("redTeam")
+      .get()
+      .then((querySnapshot) => {
+        querySnapshot.forEach((doc) => {
+          doc.ref.delete();
+        });
+      })
+      .then(() => {
+        firestore
+          .collection("blueTeam")
+          .get()
+          .then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+              doc.ref.delete();
+            });
+          })
+          .then(() => {
+            let batch = firestore.batch();
+            //add balancedRed and balancedBlue to red and blue teams in API
+            for (let i = 0; i < balancedRed.length; i++) {
+              let redRef = firestore
+                .collection("redTeam")
+                .doc(balancedRed[i].battletag);
+              batch.set(redRef, { ...balancedRed[i] });
+            }
+            for (let i = 0; i < balancedBlue.length; i++) {
+              let blueRef = firestore
+                .collection("blueTeam")
+                .doc(balancedBlue[i].battletag);
+              batch.set(blueRef, { ...balancedBlue[i] });
+            }
+
+            batch.commit().then((b) => {
+              console.log("b:", b);
+            });
+
+            setBalancedBlue([]);
+            setBalancedRed([]);
+          });
+      });
+  };
+
   const redToShow = balancedRed.length > 0 ? balancedRed : redTeam;
   const blueToShow = balancedBlue.length > 0 ? balancedBlue : blueTeam;
 
@@ -204,6 +252,11 @@ export default function PugPage(props) {
           >
             {balancedBlue.length > 0 ? "UNDO" : "BALANCE"}
           </div>
+          {balancedBlue.length > 0 && (
+            <div style={s.clearButton} onClick={setBalancedTeams}>
+              SET
+            </div>
+          )}
         </div>
       </div>
     </div>
