@@ -1,10 +1,15 @@
 import React from "react";
 import "../styling/spectator.css";
 import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
-import { removeFromSpec, addToRed, addToBlue } from "../util/firebaseFunctions";
+import {
+  removeFromSpec,
+  addToRed,
+  addToBlue,
+  makeAdmin,
+} from "../util/firebaseFunctions";
 
 export default function Spectator(props) {
-  const { data, firestore, sizes } = props;
+  const { data, firestore, sizes, isAdmin } = props;
   const roles = data.selectedRoles;
 
   const redDisabled = sizes[0] === 6;
@@ -28,52 +33,63 @@ export default function Spectator(props) {
         </div>
       </ContextMenuTrigger>
       {/* CONTEXT MENU */}
-      <ContextMenu id={data.battletag + "spec"}>
-        <div style={s.contextContainer}>
-          <div
-            style={{
-              ...s.contextItem,
-              color: redDisabled ? "grey" : "white",
-            }}
-          >
-            <MenuItem
-              onClick={() => {
-                if (redDisabled) return;
-                removeFromSpec(firestore, data.battletag);
-                addToRed(firestore, data.battletag, data);
+      {isAdmin && (
+        <ContextMenu id={data.battletag + "spec"}>
+          <div style={s.contextContainer}>
+            <div style={s.contextItem}>
+              <MenuItem
+                onClick={() => {
+                  makeAdmin(firestore, data);
+                }}
+              >
+                Make Admin
+              </MenuItem>
+            </div>
+            <div
+              style={{
+                ...s.contextItem,
+                color: redDisabled ? "grey" : "white",
               }}
             >
-              Add to Red
-            </MenuItem>
-          </div>
-          <div
-            style={{
-              ...s.contextItem,
-              color: blueDisabled ? "grey" : "white",
-            }}
-          >
-            <MenuItem
-              onClick={() => {
-                if (blueDisabled) return;
-                removeFromSpec(firestore, data.battletag);
-                addToBlue(firestore, data.battletag, data);
+              <MenuItem
+                onClick={() => {
+                  if (redDisabled) return;
+                  removeFromSpec(firestore, data.battletag);
+                  addToRed(firestore, data.battletag, data);
+                }}
+              >
+                Add to Red
+              </MenuItem>
+            </div>
+            <div
+              style={{
+                ...s.contextItem,
+                color: blueDisabled ? "grey" : "white",
               }}
             >
-              Add to Blue
-            </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  if (blueDisabled) return;
+                  removeFromSpec(firestore, data.battletag);
+                  addToBlue(firestore, data.battletag, data);
+                }}
+              >
+                Add to Blue
+              </MenuItem>
+            </div>
+            <div style={s.contextItem}>
+              <MenuItem
+                onClick={() => {
+                  removeFromSpec(firestore, data.battletag);
+                  // window.location.reload();
+                }}
+              >
+                Remove
+              </MenuItem>
+            </div>
           </div>
-          <div style={s.contextItem}>
-            <MenuItem
-              onClick={() => {
-                removeFromSpec(firestore, data.battletag);
-                // window.location.reload();
-              }}
-            >
-              Remove
-            </MenuItem>
-          </div>
-        </div>
-      </ContextMenu>
+        </ContextMenu>
+      )}
     </div>
   );
 }

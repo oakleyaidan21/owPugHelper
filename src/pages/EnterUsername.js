@@ -3,8 +3,8 @@ import "../styling/EnterUsername.css";
 import Form from "react-bootstrap/Form";
 import * as firebase from "firebase";
 import "firebase/firestore";
-import Button from "react-bootstrap/Button";
 import { useHistory } from "react-router-dom";
+import { adminPassword, createAdmin } from "../constants/hiddenConstants";
 
 export default function EnterUsername(props) {
   const history = useHistory();
@@ -17,6 +17,7 @@ export default function EnterUsername(props) {
    */
   const [battletag, setBattletag] = useState("");
   const [skillRating, setSkillRating] = useState(0);
+  const [password, setPassword] = useState("");
   const [selectedRoles, setSelectedRoles] = useState({
     Tank: false,
     Damage: false,
@@ -32,24 +33,31 @@ export default function EnterUsername(props) {
    */
   const submitBattletag = () => {
     if (!isSubmissionReady()) return;
+    const playerInfo = {
+      battletag: battletag,
+      sr: skillRating,
+      selectedRoles: selectedRoles,
+      gamesPlayed: 0,
+    };
     firestore
       .collection("spectators")
       .doc(battletag)
-      .set({
-        battletag: battletag,
-        sr: skillRating,
-        selectedRoles: selectedRoles,
-        gamesPlayed: 0,
-      })
+      .set(playerInfo)
       .then(() => {
         console.log("spectator added successfully!");
-        history.push("/pug");
+        history.push("/pug/" + createAdmin(battletag));
       })
       .catch((error) => {
         console.error("error adding spectator: ", error);
       });
 
-    history.push("/pug");
+    if (password === adminPassword) {
+      firestore
+        .collection("admins")
+        .doc(battletag)
+        .set({ ...playerInfo, match: createAdmin(battletag) })
+        .then(history.push("/pug/" + createAdmin(battletag)));
+    }
   };
 
   /**
@@ -80,7 +88,14 @@ export default function EnterUsername(props) {
 
   return (
     <div className="mainContainer">
-      <div style={{ flexDirection: "column" }}>
+      <div
+        style={{
+          flexDirection: "column",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <Form>
           <Form.Group>
             <Form.Label>
@@ -131,10 +146,21 @@ export default function EnterUsername(props) {
               );
             })}
           </div>
-          <Button variant="primary" type="submit" onClick={submitBattletag}>
-            Submit
-          </Button>
+          <Form.Group>
+            <Form.Label>Enter admin password (optional)</Form.Label>
+            <Form.Control
+              size="lg"
+              type="password"
+              placeholder="Password"
+              secur
+              onChange={(e) => setPassword(e.target.value)}
+              value={password}
+            />
+          </Form.Group>
         </Form>
+        <div onClick={submitBattletag} style={s.submitButton}>
+          Submit
+        </div>
       </div>
     </div>
   );
@@ -154,8 +180,17 @@ const s = {
     cursor: "pointer",
   },
   selectedRole: {
-    backgroundColor: "blue",
+    backgroundColor: "#4087bd",
     color: "white",
-    border: "2px solid blue",
+    border: "2px solid #4087bd",
+  },
+  submitButton: {
+    backgroundColor: "#4087bd",
+    padding: 10,
+    borderRadius: 3,
+    cursor: "pointer",
+    color: "white",
+    marginTop: 10,
+    fontWeight: "bold",
   },
 };

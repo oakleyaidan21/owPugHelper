@@ -1,3 +1,5 @@
+import { createAdmin } from "../constants/hiddenConstants";
+
 /**
  * Adds a player to the spectator collection
  * @param {Firestore instance} firestore
@@ -95,4 +97,11 @@ export const removeFromBlue = (firestore, battletag) => {
     .then(() => {
       // window.location.reload();
     });
+};
+
+export const makeAdmin = (firestore, playerInfo) => {
+  firestore
+    .collection("admins")
+    .doc(playerInfo.battletag)
+    .set({ ...playerInfo, match: createAdmin(playerInfo.battletag) });
 };

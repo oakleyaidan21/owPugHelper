@@ -3,9 +3,13 @@ import Player from "../components/Player.js";
 import * as firebase from "firebase";
 import "firebase/firestore";
 import Spectator from "../components/Spectator.js";
+import { checkIfAdmin } from "../constants/hiddenConstants.js";
 
 export default function PugPage(props) {
   const firestore = firebase.firestore();
+  const {
+    match: { params },
+  } = props;
 
   /**
    * Listens to firestore changes and updates the
@@ -30,10 +34,17 @@ export default function PugPage(props) {
         let specData = snap.docs.map((doc) => doc.data());
         setSpectators(specData);
       });
+    const unsubscribeAdmins = firestore
+      .collection("admins")
+      .onSnapshot((snap) => {
+        let adminData = snap.docs.map((doc) => doc.data());
+        setAdmins(adminData);
+      });
     return () => {
       unsubscribeRed();
       unsubscribeBlue();
       unsubscribeSpec();
+      unsubscribeAdmins();
     };
   }, [firestore]);
 
@@ -45,6 +56,7 @@ export default function PugPage(props) {
   const [balancedRed, setBalancedRed] = useState([]);
   const [balancedBlue, setBalancedBlue] = useState([]);
   const [spectators, setSpectators] = useState([]);
+  const [admins, setAdmins] = useState([]);
 
   /**
    * ********FUNCTIONS**********
@@ -128,6 +140,7 @@ export default function PugPage(props) {
   const balancePug = () => {
     //put red and blue teams into one array
     let pool = [...redTeam, ...blueTeam];
+    if (pool.length === 1) return;
     pool.sort((a, b) => {
       return parseInt(b.sr) - parseInt(a.sr);
     });
@@ -224,8 +237,11 @@ export default function PugPage(props) {
     if (blueToShow[i].selectedRoles.Damage) blueCount.Damage += 1;
   }
 
-  redAvg = (redAvg / redToShow.length).toFixed(0);
-  blueAvg = (blueAvg / blueToShow.length).toFixed(0);
+  if (redToShow.length > 0) redAvg = (redAvg / redToShow.length).toFixed(0);
+  if (blueToShow.length > 0) blueAvg = (blueAvg / blueToShow.length).toFixed(0);
+
+  //check if user is an admin
+  const isAdmin = checkIfAdmin(params.battletag, admins);
 
   return (
     <div className="mainContainer" style={s.blurredImage}>
@@ -245,6 +261,7 @@ export default function PugPage(props) {
                       color="#5fd1ff"
                       firestore={firestore}
                       sizes={[redToShow.length, blueToShow.length]}
+                      isAdmin={isAdmin}
                     />
                   );
                 })}
@@ -278,6 +295,7 @@ export default function PugPage(props) {
                       color="#ec4053"
                       firestore={firestore}
                       sizes={[redToShow.length, blueToShow.length]}
+                      isAdmin={isAdmin}
                     />
                   );
                 })}
@@ -303,32 +321,34 @@ export default function PugPage(props) {
               </div>
             </div>
             {/* BUTTONS */}
-            <div style={s.buttonContainer}>
-              <div style={s.startButton} onClick={startPug}>
-                START
-              </div>
-              <div style={s.clearButton} onClick={clearPug}>
-                CLEAR
-              </div>
-              <div
-                style={s.clearButton}
-                onClick={() => {
-                  if (balancedBlue.length > 0) {
-                    setBalancedBlue([]);
-                    setBalancedRed([]);
-                  } else {
-                    balancePug();
-                  }
-                }}
-              >
-                {balancedBlue.length > 0 ? "UNDO" : "BALANCE"}
-              </div>
-              {balancedBlue.length > 0 && (
-                <div style={s.clearButton} onClick={setBalancedTeams}>
-                  SET
+            {isAdmin && (
+              <div style={s.buttonContainer}>
+                <div style={s.startButton} onClick={startPug}>
+                  START
                 </div>
-              )}
-            </div>
+                <div style={s.clearButton} onClick={clearPug}>
+                  CLEAR
+                </div>
+                <div
+                  style={s.clearButton}
+                  onClick={() => {
+                    if (balancedBlue.length > 0) {
+                      setBalancedBlue([]);
+                      setBalancedRed([]);
+                    } else {
+                      balancePug();
+                    }
+                  }}
+                >
+                  {balancedBlue.length > 0 ? "UNDO" : "BALANCE"}
+                </div>
+                {balancedBlue.length > 0 && (
+                  <div style={s.clearButton} onClick={setBalancedTeams}>
+                    SET
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <div style={s.spectatorDivider} />
           <div style={s.spectatorContainer}>
@@ -339,6 +359,7 @@ export default function PugPage(props) {
                   data={spectator}
                   firestore={firestore}
                   sizes={[redToShow.length, blueToShow.length]}
+                  isAdmin={isAdmin}
                 />
               );
             })}

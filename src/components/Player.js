@@ -6,10 +6,11 @@ import {
   removeFromRed,
   removeFromBlue,
   addToSpec,
+  makeAdmin,
 } from "../util/firebaseFunctions";
 
 export default function Player(props) {
-  const { data, firestore, sizes } = props;
+  const { data, firestore, sizes, isAdmin } = props;
   const roles = data.selectedRoles;
 
   const isRed = props.color === "#ec4053";
@@ -35,6 +36,7 @@ export default function Player(props) {
     : sizes[0] === 6
     ? true
     : false;
+
   return (
     <div>
       <ContextMenuTrigger id={data.battletag}>
@@ -52,44 +54,55 @@ export default function Player(props) {
           </div>
         </div>
         {/* CONTEXT MENU */}
-        <ContextMenu id={data.battletag}>
-          <div style={s.contextContainer}>
-            <div
-              style={{
-                ...s.contextItem,
-                color: disabled ? "grey" : "white",
-              }}
-            >
-              <MenuItem
-                onClick={() => {
-                  if (!disabled) movePlayer(false);
+        {isAdmin && (
+          <ContextMenu id={data.battletag}>
+            <div style={s.contextContainer}>
+              <div style={s.contextItem}>
+                <MenuItem
+                  onClick={() => {
+                    makeAdmin(firestore, data);
+                  }}
+                >
+                  Make Admin
+                </MenuItem>
+              </div>
+              <div
+                style={{
+                  ...s.contextItem,
+                  color: disabled ? "grey" : "white",
                 }}
               >
-                Add to {!isRed ? "Red" : "Blue"}
-              </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    if (!disabled) movePlayer(false);
+                  }}
+                >
+                  Add to {!isRed ? "Red" : "Blue"}
+                </MenuItem>
+              </div>
+              <div style={s.contextItem}>
+                <MenuItem
+                  onClick={() => {
+                    movePlayer(true);
+                  }}
+                >
+                  Move to Spectator
+                </MenuItem>
+              </div>
+              <div style={s.contextItem}>
+                <MenuItem
+                  onClick={() => {
+                    isRed
+                      ? removeFromRed(firestore, data.battletag, data)
+                      : removeFromBlue(firestore, data.battletag, data);
+                  }}
+                >
+                  Remove
+                </MenuItem>
+              </div>
             </div>
-            <div style={s.contextItem}>
-              <MenuItem
-                onClick={() => {
-                  movePlayer(true);
-                }}
-              >
-                Move to Spectator
-              </MenuItem>
-            </div>
-            <div style={s.contextItem}>
-              <MenuItem
-                onClick={() => {
-                  isRed
-                    ? removeFromRed(firestore, data.battletag, data)
-                    : removeFromBlue(firestore, data.battletag, data);
-                }}
-              >
-                Remove
-              </MenuItem>
-            </div>
-          </div>
-        </ContextMenu>
+          </ContextMenu>
+        )}
       </ContextMenuTrigger>
     </div>
   );

@@ -14,7 +14,7 @@ function App() {
       <HashRouter history={history}>
         <Switch>
           <Route exact path="/" component={EnterUsername} />
-          <Route path="/pug" component={PugPage} />
+          <Route path="/pug/:battletag" component={PugPage} />
         </Switch>
       </HashRouter>
     </div>
