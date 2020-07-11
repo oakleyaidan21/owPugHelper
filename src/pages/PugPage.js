@@ -3,7 +3,6 @@ import Player from "../components/Player.js";
 import * as firebase from "firebase";
 import "firebase/firestore";
 import Spectator from "../components/Spectator.js";
-import TinyQueue from "tinyqueue";
 
 export default function PugPage(props) {
   const firestore = firebase.firestore();
@@ -194,7 +193,12 @@ export default function PugPage(props) {
               <div style={s.teamHeader}>Team 1</div>
               {blueToShow.map((player) => {
                 return (
-                  <Player data={player} color="#5fd1ff" firestore={firestore} />
+                  <Player
+                    data={player}
+                    color="#5fd1ff"
+                    firestore={firestore}
+                    sizes={[redToShow.length, blueToShow.length]}
+                  />
                 );
               })}
               {[...Array(emptyBlue)].map((empty, i) => {
@@ -204,14 +208,21 @@ export default function PugPage(props) {
                   </div>
                 );
               })}
-              <div>SR Average: {blueAvg}</div>
+              <div style={{ color: "white", fontWeight: "bold" }}>
+                SR Average: {blueAvg}
+              </div>
             </div>
             <div style={s.versus}>VS</div>
             <div style={s.teamContainer}>
               <div style={s.teamHeader}>Team 2</div>
               {redToShow.map((player) => {
                 return (
-                  <Player data={player} color="#ec4053" firestore={firestore} />
+                  <Player
+                    data={player}
+                    color="#ec4053"
+                    firestore={firestore}
+                    sizes={[redToShow.length, blueToShow.length]}
+                  />
                 );
               })}
               {[...Array(emptyRed)].map((empty, i) => {
@@ -221,14 +232,22 @@ export default function PugPage(props) {
                   </div>
                 );
               })}
-              <div>SR Average: {redAvg}</div>
+              <div style={{ color: "white", fontWeight: "bold" }}>
+                SR Average: {redAvg}
+              </div>
             </div>
           </div>
           <div style={s.spectatorDivider} />
           <div style={s.spectatorContainer}>
             <div style={s.teamHeader}>Spectators</div>
             {spectators.map((spectator) => {
-              return <Spectator data={spectator} firestore={firestore} />;
+              return (
+                <Spectator
+                  data={spectator}
+                  firestore={firestore}
+                  sizes={[redToShow.length, blueToShow.length]}
+                />
+              );
             })}
           </div>
         </div>
