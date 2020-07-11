@@ -86,6 +86,8 @@ export default function PugPage(props) {
   const clearPug = () => {
     const red = redTeam;
     const blue = blueTeam;
+    setBalancedBlue([]);
+    setBalancedRed([]);
 
     // delete all players from each team
     firestore
@@ -204,13 +206,22 @@ export default function PugPage(props) {
 
   let redAvg = 0;
   let blueAvg = 0;
+  let redCount = { Tank: 0, Support: 0, Damage: 0 };
+  let blueCount = { Tank: 0, Support: 0, Damage: 0 };
 
+  //get averages and roles for each team
   for (let i = 0; i < redToShow.length; i++) {
     redAvg += parseInt(redToShow[i].sr);
+    if (redToShow[i].selectedRoles.Tank) redCount.Tank += 1;
+    if (redToShow[i].selectedRoles.Support) redCount.Support += 1;
+    if (redToShow[i].selectedRoles.Damage) redCount.Damage += 1;
   }
 
   for (let i = 0; i < blueToShow.length; i++) {
     blueAvg += parseInt(blueToShow[i].sr);
+    if (blueToShow[i].selectedRoles.Tank) blueCount.Tank += 1;
+    if (blueToShow[i].selectedRoles.Support) blueCount.Support += 1;
+    if (blueToShow[i].selectedRoles.Damage) blueCount.Damage += 1;
   }
 
   redAvg = (redAvg / redToShow.length).toFixed(0);
@@ -247,6 +258,15 @@ export default function PugPage(props) {
                 <div style={{ color: "white", fontWeight: "bold" }}>
                   SR Average: {blueAvg}
                 </div>
+                <div style={{ color: "white", fontWeight: "bold" }}>
+                  {blueCount.Tank} tank(s)
+                </div>
+                <div style={{ color: "white", fontWeight: "bold" }}>
+                  {blueCount.Support} support(s)
+                </div>
+                <div style={{ color: "white", fontWeight: "bold" }}>
+                  {blueCount.Damage} damage player(s)
+                </div>
               </div>
               <div style={s.versus}>VS</div>
               <div style={s.teamContainer}>
@@ -270,6 +290,15 @@ export default function PugPage(props) {
                 })}
                 <div style={{ color: "white", fontWeight: "bold" }}>
                   SR Average: {redAvg}
+                </div>
+                <div style={{ color: "white", fontWeight: "bold" }}>
+                  {redCount.Tank} tank(s)
+                </div>
+                <div style={{ color: "white", fontWeight: "bold" }}>
+                  {redCount.Support} support(s)
+                </div>
+                <div style={{ color: "white", fontWeight: "bold" }}>
+                  {redCount.Damage} damage player(s)
                 </div>
               </div>
             </div>
@@ -315,33 +344,6 @@ export default function PugPage(props) {
             })}
           </div>
         </div>
-        {/* BUTTONS */}
-        {/* <div style={s.buttonContainer}>
-          <div style={s.startButton} onClick={startPug}>
-            START
-          </div>
-          <div style={s.clearButton} onClick={clearPug}>
-            CLEAR
-          </div>
-          <div
-            style={s.clearButton}
-            onClick={() => {
-              if (balancedBlue.length > 0) {
-                setBalancedBlue([]);
-                setBalancedRed([]);
-              } else {
-                balancePug();
-              }
-            }}
-          >
-            {balancedBlue.length > 0 ? "UNDO" : "BALANCE"}
-          </div>
-          {balancedBlue.length > 0 && (
-            <div style={s.clearButton} onClick={setBalancedTeams}>
-              SET
-            </div>
-          )}
-        </div> */}
       </div>
     </div>
   );
@@ -408,7 +410,7 @@ const s = {
     display: "flex",
     flexDirection: "column",
     flex: 2,
-    height: 500,
+    height: 550,
   },
 
   versus: {
