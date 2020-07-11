@@ -4,12 +4,11 @@ import { ContextMenu, MenuItem, ContextMenuTrigger } from "react-contextmenu";
 import { removeFromSpec, addToRed, addToBlue } from "../util/firebaseFunctions";
 
 export default function Spectator(props) {
-  const { data, firestore } = props;
+  const { data, firestore, sizes } = props;
   const roles = data.selectedRoles;
 
-  /**
-   * ********STATE*********
-   */
+  const redDisabled = sizes[0] === 6;
+  const blueDisabled = sizes[1] === 6;
 
   return (
     <div>
@@ -31,9 +30,15 @@ export default function Spectator(props) {
       {/* CONTEXT MENU */}
       <ContextMenu id={data.battletag + "spec"}>
         <div style={s.contextContainer}>
-          <div style={s.contextItem}>
+          <div
+            style={{
+              ...s.contextItem,
+              color: redDisabled ? "grey" : "white",
+            }}
+          >
             <MenuItem
               onClick={() => {
+                if (redDisabled) return;
                 removeFromSpec(firestore, data.battletag);
                 addToRed(firestore, data.battletag, data);
               }}
@@ -41,9 +46,15 @@ export default function Spectator(props) {
               Add to Red
             </MenuItem>
           </div>
-          <div style={s.contextItem}>
+          <div
+            style={{
+              ...s.contextItem,
+              color: blueDisabled ? "grey" : "white",
+            }}
+          >
             <MenuItem
               onClick={() => {
+                if (blueDisabled) return;
                 removeFromSpec(firestore, data.battletag);
                 addToBlue(firestore, data.battletag, data);
               }}

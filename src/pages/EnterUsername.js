@@ -22,7 +22,6 @@ export default function EnterUsername(props) {
     Damage: false,
     Support: false,
   });
-  const [errorMessage, setErrorMessage] = useState("");
 
   /**
    * *********FUNCTIONS*****
@@ -76,7 +75,6 @@ export default function EnterUsername(props) {
       result = false;
     }
     if (newErrorMessage.length > 0) alert(newErrorMessage);
-    setErrorMessage(newErrorMessage);
     return result;
   };
 

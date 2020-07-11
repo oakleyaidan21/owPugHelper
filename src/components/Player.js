@@ -9,7 +9,7 @@ import {
 } from "../util/firebaseFunctions";
 
 export default function Player(props) {
-  const { data, firestore } = props;
+  const { data, firestore, sizes } = props;
   const roles = data.selectedRoles;
 
   const isRed = props.color === "#ec4053";
@@ -28,6 +28,13 @@ export default function Player(props) {
     }
   };
 
+  const disabled = isRed
+    ? sizes[1] === 6
+      ? true
+      : false
+    : sizes[0] === 6
+    ? true
+    : false;
   return (
     <div>
       <ContextMenuTrigger id={data.battletag}>
@@ -47,10 +54,15 @@ export default function Player(props) {
         {/* CONTEXT MENU */}
         <ContextMenu id={data.battletag}>
           <div style={s.contextContainer}>
-            <div style={s.contextItem}>
+            <div
+              style={{
+                ...s.contextItem,
+                color: disabled ? "grey" : "white",
+              }}
+            >
               <MenuItem
                 onClick={() => {
-                  movePlayer(false);
+                  if (!disabled) movePlayer(false);
                 }}
               >
                 Add to {!isRed ? "Red" : "Blue"}

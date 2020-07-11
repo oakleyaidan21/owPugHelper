@@ -83,7 +83,42 @@ export default function PugPage(props) {
   /**
    * Puts everyone on each team into spectators
    */
-  const clearPug = () => {};
+  const clearPug = () => {
+    const red = redTeam;
+    const blue = blueTeam;
+
+    // delete all players from each team
+    firestore
+      .collection("redTeam")
+      .get()
+      .then((res) => {
+        res.forEach((element) => {
+          element.ref.delete();
+        });
+      });
+
+    firestore
+      .collection("blueTeam")
+      .get()
+      .then((res) => {
+        res.forEach((element) => {
+          element.ref.delete();
+        });
+      });
+
+    //move them to spectators
+    let batch = firestore.batch();
+
+    for (let i = 0; i < red.length; i++) {
+      let specRef = firestore.collection("spectators").doc(red[i].battletag);
+      batch.set(specRef, { ...red[i] });
+    }
+    for (let i = 0; i < blue.length; i++) {
+      let specRef = firestore.collection("spectators").doc(blue[i].battletag);
+      batch.set(specRef, { ...blue[i] });
+    }
+    batch.commit();
+  };
 
   /**
    * Balances using the greedy partition algorithm
@@ -189,52 +224,81 @@ export default function PugPage(props) {
         </div>
         <div style={{ display: "flex", flexDirection: "row", marginTop: 20 }}>
           <div style={s.matchContainer}>
-            <div style={s.teamContainer}>
-              <div style={s.teamHeader}>Team 1</div>
-              {blueToShow.map((player) => {
-                return (
-                  <Player
-                    data={player}
-                    color="#5fd1ff"
-                    firestore={firestore}
-                    sizes={[redToShow.length, blueToShow.length]}
-                  />
-                );
-              })}
-              {[...Array(emptyBlue)].map((empty, i) => {
-                return (
-                  <div style={s.emptyPlayer} key={i + "blue"}>
-                    EMPTY
-                  </div>
-                );
-              })}
-              <div style={{ color: "white", fontWeight: "bold" }}>
-                SR Average: {blueAvg}
+            <div style={{ display: "flex", flex: 1, flexDirection: "row" }}>
+              <div style={s.teamContainer}>
+                <div style={s.teamHeader}>Team 1</div>
+                {blueToShow.map((player) => {
+                  return (
+                    <Player
+                      data={player}
+                      color="#5fd1ff"
+                      firestore={firestore}
+                      sizes={[redToShow.length, blueToShow.length]}
+                    />
+                  );
+                })}
+                {[...Array(emptyBlue)].map((empty, i) => {
+                  return (
+                    <div style={s.emptyPlayer} key={i + "blue"}>
+                      EMPTY
+                    </div>
+                  );
+                })}
+                <div style={{ color: "white", fontWeight: "bold" }}>
+                  SR Average: {blueAvg}
+                </div>
+              </div>
+              <div style={s.versus}>VS</div>
+              <div style={s.teamContainer}>
+                <div style={s.teamHeader}>Team 2</div>
+                {redToShow.map((player) => {
+                  return (
+                    <Player
+                      data={player}
+                      color="#ec4053"
+                      firestore={firestore}
+                      sizes={[redToShow.length, blueToShow.length]}
+                    />
+                  );
+                })}
+                {[...Array(emptyRed)].map((empty, i) => {
+                  return (
+                    <div style={s.emptyPlayer} key={i + "red"}>
+                      EMPTY
+                    </div>
+                  );
+                })}
+                <div style={{ color: "white", fontWeight: "bold" }}>
+                  SR Average: {redAvg}
+                </div>
               </div>
             </div>
-            <div style={s.versus}>VS</div>
-            <div style={s.teamContainer}>
-              <div style={s.teamHeader}>Team 2</div>
-              {redToShow.map((player) => {
-                return (
-                  <Player
-                    data={player}
-                    color="#ec4053"
-                    firestore={firestore}
-                    sizes={[redToShow.length, blueToShow.length]}
-                  />
-                );
-              })}
-              {[...Array(emptyRed)].map((empty, i) => {
-                return (
-                  <div style={s.emptyPlayer} key={i + "red"}>
-                    EMPTY
-                  </div>
-                );
-              })}
-              <div style={{ color: "white", fontWeight: "bold" }}>
-                SR Average: {redAvg}
+            {/* BUTTONS */}
+            <div style={s.buttonContainer}>
+              <div style={s.startButton} onClick={startPug}>
+                START
               </div>
+              <div style={s.clearButton} onClick={clearPug}>
+                CLEAR
+              </div>
+              <div
+                style={s.clearButton}
+                onClick={() => {
+                  if (balancedBlue.length > 0) {
+                    setBalancedBlue([]);
+                    setBalancedRed([]);
+                  } else {
+                    balancePug();
+                  }
+                }}
+              >
+                {balancedBlue.length > 0 ? "UNDO" : "BALANCE"}
+              </div>
+              {balancedBlue.length > 0 && (
+                <div style={s.clearButton} onClick={setBalancedTeams}>
+                  SET
+                </div>
+              )}
             </div>
           </div>
           <div style={s.spectatorDivider} />
@@ -251,7 +315,8 @@ export default function PugPage(props) {
             })}
           </div>
         </div>
-        <div style={s.buttonContainer}>
+        {/* BUTTONS */}
+        {/* <div style={s.buttonContainer}>
           <div style={s.startButton} onClick={startPug}>
             START
           </div>
@@ -276,7 +341,7 @@ export default function PugPage(props) {
               SET
             </div>
           )}
-        </div>
+        </div> */}
       </div>
     </div>
   );
@@ -297,6 +362,7 @@ const s = {
     display: "flex",
     flexDirection: "column",
     width: 300,
+    maxHeight: 200,
   },
   spectatorContainer: {
     display: "flex",
@@ -340,8 +406,9 @@ const s = {
 
   matchContainer: {
     display: "flex",
-    flexDirection: "row",
+    flexDirection: "column",
     flex: 2,
+    height: 500,
   },
 
   versus: {
